@@ -1,5 +1,6 @@
 import pandas as pd
 import time
+import sqlite3
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -7,19 +8,34 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
-def send_messages(excel_file, message, confirm_whatsapp_linked):
-    if not excel_file or not message:
-        return "Error: Por favor, selecciona un archivo y escribe un mensaje."
-    
-    df = pd.read_excel(excel_file)
+def connect_db():
+    return sqlite3.connect('contactos.db')
+
+def get_contacts_from_db():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT telefono FROM contactos")
+    rows = cursor.fetchall()
+    conn.close()
+    return [row[0] for row in rows]
+
+def send_messages(message, confirm_whatsapp_linked):
+    if not message:
+        return "Error: Por favor, escribe un mensaje."
+
+    # Obtener los números de teléfono desde la base de datos
+    contactos = get_contacts_from_db()
+    if not contactos:
+        return "Error: No se encontraron contactos en la base de datos."
+
+    # Configuración de Selenium
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
     
     driver.get('https://web.whatsapp.com')
     confirm_whatsapp_linked()
 
-    for index, row in df.iterrows():
-        numero = row['Número de Teléfono']
+    for numero in contactos:
         url = f"https://web.whatsapp.com/send?phone={numero}&text={message}"
         
         driver.get(url)
