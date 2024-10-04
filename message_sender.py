@@ -23,6 +23,9 @@ def send_messages(message, confirm_whatsapp_linked):
     if not message:
         return "Error: Por favor, escribe un mensaje."
 
+    # Reemplazar saltos de línea por el código URL para salto de línea
+    message = message.replace("\n", "%0A")
+
     # Obtener los números de teléfono desde la base de datos
     contactos = get_contacts_from_db()
     if not contactos:

@@ -112,7 +112,7 @@ def add_contact_window():
 
     def save_contact():
         nombre = nombre_entry.get()
-        telefono = telefono_entry.get()
+        telefono = telefono_entry.get().strip()
         if nombre and telefono:
             add_contact(nombre, telefono)
             messagebox.showinfo("Contacto Agregado", "El contacto ha sido agregado.")
@@ -186,7 +186,7 @@ def export_to_excel():
 # Función para importar contactos desde un archivo Excel
 def import_from_excel(file_path):
     try:
-        df = pd.read_excel(file_path)
+        df = pd.read_excel(file_path, dtype={'telefono': str})
 
         if 'telefono' not in df.columns or 'nombre' not in df.columns:
             messagebox.showerror("Error", "El archivo Excel debe contener las columnas 'nombre' y 'telefono'.")
