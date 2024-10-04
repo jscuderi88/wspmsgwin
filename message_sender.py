@@ -39,21 +39,29 @@ def send_messages(message, confirm_whatsapp_linked):
     confirm_whatsapp_linked()
 
     for numero in contactos:
-        url = f"https://web.whatsapp.com/send?phone={numero}&text={message}"
+        try:
+            url = f"https://web.whatsapp.com/send?phone={numero}&text={message}"
+            driver.get(url)
+
+            # Esperar que aparezca el campo de texto del mensaje
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '//div[@contenteditable="true"]'))
+            )
+            
+            # Esperar que aparezca el botón de envío
+            send_button = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, '//span[@data-icon="send"]'))
+            )
+            
+            send_button.click()
+
+            # Pausa después de enviar el mensaje
+            time.sleep(2)
         
-        driver.get(url)
-        
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, '//div[@contenteditable="true"]'))
-        )
-        
-        send_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, '//span[@data-icon="send"]'))
-        )
-        
-        send_button.click()
-        
-        time.sleep(2)
+        except Exception as e:
+            print(f"Error al enviar mensaje a {numero}: {str(e)}")
+            # Continuar con el siguiente número aunque ocurra un error
+            continue
 
     driver.quit()
     return "Éxito: Los mensajes han sido enviados."
